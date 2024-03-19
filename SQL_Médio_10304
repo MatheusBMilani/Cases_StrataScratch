@@ -1,0 +1,67 @@
+Link Desafio - https://platform.stratascratch.com/coding/10304-risky-projects?code_type=1
+Vaga - LinkedIn
+Dificuldade - Medium
+
+
+-- Solução --
+
+-- Calcular a duração do projeto --
+/*
+SELECT  id,
+        title,
+        budget,
+        start_date,
+        end_date,
+        end_date - start_date AS project_duration -- Duração do projeto
+FROM linkedin_projects 
+*/
+/*
+-- Porcentagem do ano que o projeto consumiu
+SELECT  id,
+        title,
+        budget,
+        start_date,
+        end_date,
+        (end_date - start_date) / 365::float AS project_duration -- Duração do projeto
+FROM linkedin_projects
+*/
+/*
+-- Porcentagem do ano que o projeto consumiu
+SELECT  id,
+        budget,
+        (end_date - start_date) / 365::float AS project_duration, -- Duração do projeto em porcentagem
+        project_yearly_salary
+FROM linkedin_projects
+JOIN (SELECT project_id, SUM(salary) AS project_yearly_salary -- Calcula a soma dos salários por projeto
+    FROM linkedin_emp_projects ep
+    JOIN linkedin_employees e ON ep.emp_id = e.id
+    GROUP BY project_id) AS yearly_salary
+ON linkedin_projects.id = yearly_salary.project_id
+*/
+-- Calcular se o budget foi excedido
+/*
+SELECT  id,
+        budget,
+        CEILING((end_date - start_date) / 365::float * project_yearly_salary) AS employee_expenses, -- Duração do projeto em porcentagem arredondado
+        project_yearly_salary
+FROM linkedin_projects
+JOIN (SELECT project_id, SUM(salary) AS project_yearly_salary -- Calcula a soma dos salários por projeto
+    FROM linkedin_emp_projects ep
+    JOIN linkedin_employees e ON ep.emp_id = e.id
+    GROUP BY project_id) AS yearly_salary
+ON linkedin_projects.id = yearly_salary.project_id
+*/
+-- Resultado final mostrando apenas projetos com o orçamento ultrapassado
+SELECT  title,
+        budget,
+        CEILING((end_date - start_date) / 365::float * project_yearly_salary) AS employee_expenses -- Duração do projeto em porcentagem arredondado
+FROM linkedin_projects
+JOIN (SELECT project_id, SUM(salary) AS project_yearly_salary -- Calcula a soma dos salários por projeto
+    FROM linkedin_emp_projects ep
+    JOIN linkedin_employees e ON ep.emp_id = e.id
+    GROUP BY project_id) AS yearly_salary
+ON linkedin_projects.id = yearly_salary.project_id -- Chaves
+WHERE CEILING((end_date - start_date) / 365::float * project_yearly_salary) > budget -- Filtro para mostrar valores superiores
+
+
+-- Portanto, a lista dos projetos apresentados necessitam de revisão no budget
